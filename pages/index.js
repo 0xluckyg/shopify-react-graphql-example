@@ -12,14 +12,24 @@
 // To Run App
 // {forwarding address}/shopify?shop={shop name}.myshopify.com
 // http://scottshopify.ngrok.io/shopify?shop=bath-niche.myshopify.com
-import { TextStyle } from '@shopify/polaris';
+import { EmptyState, Layout, Page, TextStyle } from '@shopify/polaris';
 
 const Index = () => (
-	<div>
-		<TextStyle variation="positive">
-			Sample app using React and Next.js
-		</TextStyle>
-    </div>
+	<Page primaryAction={{
+		content: 'Select products',
+	}}>
+		<Layout>
+			<EmptyState
+				heading="Header Text"
+				action={{
+				content: 'Button Text',
+					onAction: () => console.log('clicked'),
+				}}
+				image="https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg">
+				<p>Content text example.</p>
+			</EmptyState>
+		</Layout>		
+    </Page>
 );
   
 export default Index;
