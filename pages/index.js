@@ -13,7 +13,6 @@
 // {forwarding address}/shopify?shop={shop name}.myshopify.com
 // http://scottshopify.ngrok.io/shopify?shop=bath-niche.myshopify.com
 
-
 const Index = () => (
     <div>
       <p>Sample app using React and Next.js</p>
