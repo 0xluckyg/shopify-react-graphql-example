@@ -1,3 +1,4 @@
+require('../config/config');
 import App from 'next/app';
 import Head from 'next/head';
 import { AppProvider } from '@shopify/polaris';
@@ -16,7 +17,7 @@ class Gateguard extends App {
                     <title>Gateguard</title>
                     <meta name="viewport" content="width=device-width, initial-scale=1" />
                     <meta charSet="utf-8" />
-                </Head>
+                </Head>                
                 <AppProvider shopOrigin={this.state.shopOrigin} apiKey={process.env.SHOPIFY_API_KEY} forceRedirect>
                     <Component {...pageProps} />
                 </AppProvider>

@@ -1,35 +1,46 @@
-//Running App
-//npm run dev
-// Shopify Partners Login
-// https://partners.shopify.com
-// For development use ngrok tunnelling 
-// ~/ngrok http 3000
-// If ngrok pro option
-// ~/ngrok http 3000 -subdomain=scottshopify
-// https://scottshopify.ngrok.io
-// React Auth Help
-// https://help.shopify.com/en/api/tutorials/build-a-shopify-app-with-node-and-react/set-up-your-app
-// To Run App
-// {forwarding address}/shopify?shop={shop name}.myshopify.com
-// http://scottshopify.ngrok.io/shopify?shop=bath-niche.myshopify.com
-import { EmptyState, Layout, Page, TextStyle } from '@shopify/polaris';
+import { EmptyState, Layout, Page, ResourcePicker } from '@shopify/polaris';
 
-const Index = () => (
-	<Page primaryAction={{
-		content: 'Select products',
-	}}>
-		<Layout>
-			<EmptyState
-				heading="Header Text"
-				action={{
-				content: 'Button Text',
-					onAction: () => console.log('clicked'),
-				}}
-				image="https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg">
-				<p>Content text example.</p>
-			</EmptyState>
-		</Layout>		
-    </Page>
-);
-  
+class Index extends React.Component {
+    state = { open: false };
+
+    render() {
+        return (
+                <Page
+                    primaryAction={{
+                        content: 'Select products',
+						onAction: () => { 
+							this.setState({ open: true }) 
+							console.log(this.state)
+						},
+                    }}
+                >
+					<ResourcePicker
+						resourceType="Product"
+						showVariants={true}
+						open={this.state.open}
+						onSelection={(resources) => this.handleSelection(resources)}
+						onCancel={() => this.setState({ open: false })}
+					/>
+                    <Layout>
+                        <EmptyState
+                            heading="Select products to start"
+                            action={{
+                                content: 'Select products',
+                                onAction: () => this.setState({ open: true }),
+                            }}
+                            image="https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg"
+                        >
+                            <p>Select products and change their price temporarily</p>
+                        </EmptyState>
+                    </Layout>
+                </Page >
+        );
+    }
+    handleSelection = (resources) => {
+		const idsFromResources = resources.selection.map((product) => product.id);
+    	this.setState({ open: false })
+    	console.log(resources);
+    };
+}
+
 export default Index;
