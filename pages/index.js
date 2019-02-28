@@ -1,5 +1,4 @@
 import { EmptyState, Layout, Page, ResourcePicker } from '@shopify/polaris';
-
 class Index extends React.Component {
     state = { open: false };
 
@@ -8,15 +7,12 @@ class Index extends React.Component {
                 <Page
                     primaryAction={{
                         content: 'Select products',
-						onAction: () => { 
-							this.setState({ open: true }) 
-							console.log(this.state)
-						},
+						onAction: () => this.setState({ open: true }),
                     }}
                 >
 					<ResourcePicker
 						resourceType="Product"
-						showVariants={true}
+						showVariants={false}
 						open={this.state.open}
 						onSelection={(resources) => this.handleSelection(resources)}
 						onCancel={() => this.setState({ open: false })}
@@ -38,8 +34,8 @@ class Index extends React.Component {
     }
     handleSelection = (resources) => {
 		const idsFromResources = resources.selection.map((product) => product.id);
-    	this.setState({ open: false })
-    	console.log(resources);
+      	this.setState({ open: false })
+      	console.log(resources);
     };
 }
 

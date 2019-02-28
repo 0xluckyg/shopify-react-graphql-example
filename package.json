@@ -14,14 +14,18 @@
 	"license": "ISC",
 	"dependencies": {
 		"@shopify/koa-shopify-auth": "^3.1.15",
+		"@shopify/koa-shopify-graphql-proxy": "^2.1.5",
 		"@shopify/polaris": "^3.9.0",
 		"@zeit/next-css": "^1.0.1",
+		"apollo-boost": "^0.3.1",
+		"graphql": "^14.1.1",
 		"isomorphic-fetch": "^2.2.1",
 		"js-cookie": "^2.2.0",
 		"koa": "^2.7.0",
 		"koa-session": "^5.10.1",
 		"next": "^8.0.3",
 		"react": "^16.8.3",
+		"react-apollo": "^2.5.1",
 		"react-dom": "^16.8.3"
 	}
 }
