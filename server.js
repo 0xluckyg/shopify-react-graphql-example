@@ -14,7 +14,7 @@ const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-const { SHOPIFY_API_SECRET_KEY, SHOPIFY_API_KEY } = process.env;
+const { SHOPIFY_API_SECRET_KEY, SHOPIFY_API_KEY, TUNNEL_URL } = process.env;
 const shopifyScopes = [
     "read_products",
     "write_products",
@@ -56,6 +56,26 @@ app.prepare().then(() => {
             afterAuth(ctx) {
                 const { shop, accessToken } = ctx.session;        
                 ctx.cookies.set('shopOrigin', shop, { httpOnly: false })
+
+                    const stringifiedBillingParams = JSON.stringify({
+                            recurring_application_charge: {
+                            name: 'Recurring charge',
+                            price: 20.01,
+                            return_url: TUNNEL_URL,
+                            test: true
+                        }
+                    })
+                    const options = {
+                        method: 'POST',
+                        body: stringifiedBillingParams,
+                        credentials: 'include',
+                        headers: {
+                            'X-Shopify-Access-Token': accessToken,
+                            'Content-Type': 'application/json',
+                        },
+                    };
+
+
                 ctx.redirect('/');
             },
         }),
