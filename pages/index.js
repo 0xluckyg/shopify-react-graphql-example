@@ -1,4 +1,5 @@
 import { EmptyState, Layout, Page, ResourcePicker } from '@shopify/polaris';
+
 class Index extends React.Component {
     state = { open: false };
 

@@ -57,23 +57,24 @@ app.prepare().then(() => {
                 const { shop, accessToken } = ctx.session;        
                 ctx.cookies.set('shopOrigin', shop, { httpOnly: false })
 
-                    const stringifiedBillingParams = JSON.stringify({
-                            recurring_application_charge: {
-                            name: 'Recurring charge',
-                            price: 20.01,
-                            return_url: TUNNEL_URL,
-                            test: true
-                        }
-                    })
-                    const options = {
-                        method: 'POST',
-                        body: stringifiedBillingParams,
-                        credentials: 'include',
-                        headers: {
-                            'X-Shopify-Access-Token': accessToken,
-                            'Content-Type': 'application/json',
-                        },
-                    };
+                //Shopify billing set up
+                const stringifiedBillingParams = JSON.stringify({
+                        recurring_application_charge: {
+                        name: 'Recurring charge',
+                        price: 20.01,
+                        return_url: TUNNEL_URL,
+                        test: true
+                    }
+                })
+                const options = {
+                    method: 'POST',
+                    body: stringifiedBillingParams,
+                    credentials: 'include',
+                    headers: {
+                        'X-Shopify-Access-Token': accessToken,
+                        'Content-Type': 'application/json',
+                    },
+                };
 
 
                 ctx.redirect('/');
