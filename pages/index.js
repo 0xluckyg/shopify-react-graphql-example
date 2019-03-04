@@ -1,5 +1,6 @@
 import { EmptyState, Layout, Page, ResourcePicker } from '@shopify/polaris';
 
+//pages/index.js file gets automatically transpiled and rendered by Next.js
 class Index extends React.Component {
     state = { open: false };
 

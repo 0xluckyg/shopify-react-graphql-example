@@ -1,8 +1,10 @@
 # dependencies
 /node_modules
-/config/config.json
 package-lock.json
 .next
+
+# credentials
+/config/config.json
 
 # misc
 .DS_Store
