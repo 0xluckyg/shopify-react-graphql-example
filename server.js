@@ -3,13 +3,13 @@
 // For development use ngrok tunnelling 
 // ~/ngrok http 3000
 // If ngrok pro option
-// ~/ngrok http 3000 -subdomain=scottshopify.ngrok.io
-// https://scottshopify.ngrok.io.ngrok.io
+// ~/ngrok http 3000 -subdomain=scottshopify
+// https://scottshopify.ngrok.io
 // Node Auth Help
 // https://help.shopify.com/en/api/tutorials/build-a-shopify-app-with-node-and-express#step-2-create-and-configure-your-app-in-the-partner-dashboard
 // To Run App
 // {forwarding address}/shopify?shop={shop name}.myshopify.com
-// http://scottshopify.ngrok.io.ngrok.io/shopify?shop=bath-niche.myshopify.com
+// https://scottshopify.ngrok.io/auth?shop=miraekomerco.myshopify.com
 
 // next.js takes care of:
 // webpack configuration
@@ -97,7 +97,6 @@ app.prepare().then(() => {
                         test: true
                     }
                 })
-
                 const options = {
                     method: 'POST',
                     body: stringifiedBillingParams,
