@@ -37,7 +37,8 @@ class Gateguard extends App {
                     <meta charSet="utf-8" />
                 </Head>
                 {/* Polaris AppProvider must wrap the whole app in order for Polaris React components to function */}
-                {/* The app will use a library called Shopify App Bridge to enable Shopify embeded app by passing in Shopify API key to shopOrigin in Polaris AppProvider */}
+                {/* We access Shopify App Bridge through Polaris. 
+                The app will use a library called Shopify App Bridge to enable Shopify embeded app by passing in Shopify API key to shopOrigin in Polaris AppProvider */}
                 <AppProvider shopOrigin={this.state.shopOrigin} apiKey={process.env.SHOPIFY_API_KEY} forceRedirect>
                     {/* Wrapping the app with ApolloProvider lets components further down the tree access the Apollo client */}
                     <ApolloProvider client={client}>
