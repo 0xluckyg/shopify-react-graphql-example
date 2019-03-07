@@ -29,6 +29,7 @@ const next = require('next');
 //package exposes "shopifyAuth" by default. We're changing that to "createShopifyAuth"
 const { default: createShopifyAuth } = require('@shopify/koa-shopify-auth');
 const { verifyRequest } = require('@shopify/koa-shopify-auth');
+//Used to securely proxy graphQL requests from Shopify
 const { default: graphQLProxy } = require('@shopify/koa-shopify-graphql-proxy');
 
 const port = parseInt(process.env.PORT, 10) || 3000;
@@ -83,7 +84,8 @@ app.prepare().then(() => {
             scopes: shopifyScopes,            
             //After authenticating with Shopify redirects to this app through afterAuth
             afterAuth(ctx) {
-                const { shop, accessToken } = ctx.session;      
+                const { shop, accessToken } = ctx.session;   
+                //The app will use a library called Shopify App Bridge to communicate with Shopify by passing in Shopify API key to shopOrigin in Polaris AppProvider
                 //shopOrigin (shop) is the myshopify URL of the store that installs the app
                 //httpOnly: true tells the cookie that the cookie should only be accessible by the server  
                 ctx.cookies.set('shopOrigin', shop, { httpOnly: false })
@@ -115,16 +117,17 @@ app.prepare().then(() => {
     server.use(graphQLProxy());
     //Returns a middleware to verify requests before letting the app further in the chain.
     //Everything after this point will require authentication
-    server.use(verifyRequest({
+    server.use(verifyRequest({        
         // Path to redirect to if verification fails. defaults to '/auth'
         // authRoute: '/foo/auth',
         // Path to redirect to if verification fails and there is no shop on the query. defaults to '/auth'
         // fallbackRoute: '/install',
     }));
-    server.use(async (ctx) => {
+    //Lets next.js prepare all the requests on the React side
+    server.use(async (ctx) => {        
         await handle(ctx.req, ctx.res);
         ctx.respond = false;
-        ctx.res.statusCode = 200;
+        ctx.res.statusCode = 200;        
         return
     });
 

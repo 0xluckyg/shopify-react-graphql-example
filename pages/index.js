@@ -1,3 +1,5 @@
+// https://polaris.shopify.com/components/get-started
+
 import { EmptyState, Layout, Page, ResourcePicker } from '@shopify/polaris';
 
 //pages/index.js file gets automatically transpiled and rendered by Next.js
@@ -13,6 +15,7 @@ class Index extends React.Component {
 						onAction: () => this.setState({ open: true }),
                     }}
                 >
+                    {/* ResourcePicker lets you pick Shopify products. Triggers on state.open. Only works for embedded apps */}
 					<ResourcePicker
 						resourceType="Product"
 						showVariants={false}
@@ -36,6 +39,7 @@ class Index extends React.Component {
         );
     }
     handleSelection = (resources) => {
+        //Passes data from the ResourcePicker
 		const idsFromResources = resources.selection.map((product) => product.id);
       	this.setState({ open: false })
       	console.log(resources);

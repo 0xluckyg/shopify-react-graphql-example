@@ -6,9 +6,13 @@ import { AppProvider } from '@shopify/polaris';
 import App from 'next/app';
 import Head from 'next/head';
 import Cookies from 'js-cookie'
+//Apollo lets React app interact with GraphQL
+//Provides Apollo interface. Includes local cache
 import ApolloClient from 'apollo-boost';
+//Provides Apollo view layer for React
 import { ApolloProvider } from 'react-apollo';
 
+//Since the app is already using cookies for login and session management, we can simply reuse these credentials when making requests to the GraphQL endpoint by passing the credentials option
 const client = new ApolloClient({
     fetchOptions: {
         credentials: 'include'
@@ -18,7 +22,7 @@ const client = new ApolloClient({
 //_app file overrides Next.js App file.
 // Next.js uses an App component to pass down classes to the other files in your app. This saves us from having to add imports to each file
 // _app.js file that passes down Apollo and Polaris components, styles, and everything else typically found in an index file
-class Gateguard extends App {
+class Gateguard extends App {    
     state = {
         shopOrigin: Cookies.get('shopOrigin')
     }
@@ -33,7 +37,9 @@ class Gateguard extends App {
                     <meta charSet="utf-8" />
                 </Head>
                 {/* Polaris AppProvider must wrap the whole app in order for Polaris React components to function */}
+                {/* The app will use a library called Shopify App Bridge to enable Shopify embeded app by passing in Shopify API key to shopOrigin in Polaris AppProvider */}
                 <AppProvider shopOrigin={this.state.shopOrigin} apiKey={process.env.SHOPIFY_API_KEY} forceRedirect>
+                    {/* Wrapping the app with ApolloProvider lets components further down the tree access the Apollo client */}
                     <ApolloProvider client={client}>
                         <Component {...pageProps} />
                     </ApolloProvider>

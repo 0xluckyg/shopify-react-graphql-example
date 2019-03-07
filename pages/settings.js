@@ -5,13 +5,13 @@ import {
     FormLayout,
     Layout,
     Page,
+    SettingToggle,
     Stack,
     TextField,
-    SettingToggle,
-    TextStyle
+    TextStyle,
 } from '@shopify/polaris';
 
-class AnnotatedLayout extends React.Component {
+class Settings extends React.Component {
     state = {
         discount: '10%',
         enabled: false,
@@ -25,60 +25,62 @@ class AnnotatedLayout extends React.Component {
         return (
             <Page>
                 <Layout>
+                <Layout.AnnotatedSection
+                    title="Default discount"
+                    description="When you add a product to Sample App, it will automatically be discounted by this percentage."
+                >
+                    <Card sectioned>
+                    <Form onSubmit={this.handleSubmit}>
+                        <FormLayout>
+                        <TextField
+                            value={discount}
+                            onChange={this.handleChange('discount')}
+                            label="Discount percentage"
+                            type="discount"
+                        />
+                        <Stack distribution="trailing">
+                            <Button primary submit>
+                            Save
+                            </Button>
+                        </Stack>
+                        </FormLayout>
+                    </Form>
+                    </Card>
+                </Layout.AnnotatedSection>
                     <Layout.AnnotatedSection
-                        title="Default discount"
-                        description="When you add a product to Sample App, it will automatically be discounted by this percentage."
+                    title="Price updates"
+                    description="Temporarily disable all Sample App price updates"
                     >
-                        <Card sectioned>
-                        <Form onSubmit={this.handleSubmit}>
-                            <FormLayout>
-                            <TextField
-                                value={discount}
-                                onChange={this.handleChange('discount')}
-                                label="Discount percentage"
-                                type="discount"
-                            />
-                            <Stack distribution="trailing">
-                                <Button primary submit>
-                                Save
-                                </Button>
-                            </Stack>
-                            </FormLayout>
-                        </Form>
-                        </Card>
-                    </Layout.AnnotatedSection>
-                    <Layout.AnnotatedSection
-                        title="Price updates"
-                        description="Temporarily disable all Sample App price updates"
+                    <SettingToggle
+                        action={{
+                        content: contentStatus,
+                        onAction: this.handleToggle,
+                        }}
+                        enabled={enabled}
                     >
-                        <SettingToggle action={{
-                                content: contentStatus,
-                                onAction: this.handleToggle,
-                            }}
-                            enabled={enabled}
-                        >
-                            This setting is {' '}
-                            <TextStyle variation="strong">{textStatus}</TextStyle>.
-                        </SettingToggle>
+                        This setting is{' '}
+                        <TextStyle variation="strong">{textStatus}</TextStyle>.
+                    </SettingToggle>
                     </Layout.AnnotatedSection>
                 </Layout>
             </Page>
         );
     }
     handleSubmit = () => {
-        this.setState({
-        discount: this.state.discount
-        });
         console.log('submission', this.state);
+        this.setState({
+            discount: this.state.discount,
+        });        
     };
-    handleChange = field => {
-        return value => this.setState({ [field]: value });
+    handleChange = (field) => {
+        return (value) => this.setState({[field]: value});
     };
     handleToggle = () => {
+        console.log('toggle', this.state)
         this.setState(({ enabled }) => {
             return { enabled: !enabled };
         });
     };
 }
 
-export default AnnotatedLayout;
+export default Settings;
