@@ -1,4 +1,5 @@
 async function processPayment (ctx, next) {
+    console.log('process payment called')
     if (ctx.query.charge_id) {
         const chargeUrl = 'admin/recurring_application_charges';
         const options = {
@@ -15,12 +16,13 @@ async function processPayment (ctx, next) {
         optionsWithGet,)
             .then((response) => response.json())
             .then((myJson) => {
+                console.log('billing fetch called ', myJson)
                 if (myJson.recurring_application_charge.status === 'accepted') {
                     const stringifyMyJSON = JSON.stringify(myJson)
                     const optionsWithJSON = { ...optionsWithPost, body: stringifyMyJSON }
-                    fetch(`https://${ctx.session.shop}/admin/${chargeUrl}/${ctx.query.charge_id}/activate.json`, optionsWithJSON)
+                    fetch(`https://${ctx.session.shop}/${chargeUrl}/${ctx.query.charge_id}/activate.json`, optionsWithJSON)
                         .then((response) => response.json())
-                        .catch((error) => console.log('error', error));
+                        .catch((error) => console.log('error2', error));
                 }
                 else return ctx.redirect('/')
             });

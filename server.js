@@ -94,14 +94,14 @@ app.prepare().then(() => {
                 //The app will use a library called Shopify App Bridge to communicate with Shopify by passing in Shopify API key to shopOrigin in Polaris AppProvider
                 //shopOrigin (shop) is the myshopify URL of the store that installs the app
                 //httpOnly: true tells the cookie that the cookie should only be accessible by the server  
-                ctx.cookies.set('shopOrigin', shop, { httpOnly: false })
-
-                //Shopify billing API needs 3 variables:                
+                ctx.cookies.set('shopOrigin', shop, { httpOnly: false })                
+                //Shopify billing API requires 3 variables: price, name, return_url                
                 const stringifiedBillingParams = JSON.stringify({
-                        recurring_application_charge: {
-                        name: '30 Day Recurring Charge', //The name of your charge. For example, “Sample embedded app 30-day fee.”
+                    recurring_application_charge: {
+                        name: 'Recurring charge', //The name of your charge. For example, “Sample embedded app 30-day fee.”
                         price: 9.99,
                         return_url: APP_URL,
+                        trial_days: 7, //If merchant doesn't uninstall the app within these days, Shopify charges the merchant
                         test: true //The Billing API also has a test property that simulates successful charges.
                     }
                 })
@@ -118,17 +118,20 @@ app.prepare().then(() => {
                 //Make Shopify billing request using await
                 const confirmationURL = await fetch(
                 `https://${shop}/admin/recurring_application_charges.json`, options)
-                    .then((response) => response.json())
-                    .then((jsonData) => jsonData.recurring_application_charge.confirmation_url)
-                    .catch((error) => console.log('error', error));                    
-
+                    .then((response) => {                        
+                        return response.json()
+                    })
+                    .then((jsonData) => {                         
+                        return jsonData.recurring_application_charge.confirmation_url 
+                    })
+                    .catch((error) => console.log('error', error));                                        
                 ctx.redirect(confirmationURL);
             },
         }),
     );        
     //Used to securely proxy graphQL requests from Shopify
     server.use(graphQLProxy());
-    
+
     server.use(router.routes());
     //Returns a middleware to verify requests before letting the app further in the chain.
     //Everything after this point will require authentication
