@@ -31,6 +31,8 @@ const { default: createShopifyAuth } = require('@shopify/koa-shopify-auth');
 const { verifyRequest } = require('@shopify/koa-shopify-auth');
 //Used to securely proxy graphQL requests from Shopify
 const { default: graphQLProxy } = require('@shopify/koa-shopify-graphql-proxy');
+const Router = require('koa-router');
+const processPayment = require('./server/router');
 
 const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== 'production';
@@ -38,7 +40,7 @@ const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-const { SHOPIFY_API_SECRET_KEY, SHOPIFY_API_KEY, TUNNEL_URL } = process.env;
+const { SHOPIFY_API_SECRET_KEY, SHOPIFY_API_KEY, APP_URL } = process.env;
 //List of Shopify access permissions available
 const shopifyScopes = [
     "read_products",
@@ -73,7 +75,10 @@ app.prepare().then(() => {
 
     //Koa acts like "app" in express
     const server = new Koa();    
+    const router = new Router();
     server.keys = [SHOPIFY_API_SECRET_KEY];
+
+    router.get('/', processPayment);
 
     server.use(session(server));    
     server.use(
@@ -83,20 +88,21 @@ app.prepare().then(() => {
             secret: SHOPIFY_API_SECRET_KEY,
             scopes: shopifyScopes,            
             //After authenticating with Shopify redirects to this app through afterAuth
-            afterAuth(ctx) {
+            //Async returns promise to wait for Shopify billing fetch to complete
+            async afterAuth(ctx) {
                 const { shop, accessToken } = ctx.session;   
                 //The app will use a library called Shopify App Bridge to communicate with Shopify by passing in Shopify API key to shopOrigin in Polaris AppProvider
                 //shopOrigin (shop) is the myshopify URL of the store that installs the app
                 //httpOnly: true tells the cookie that the cookie should only be accessible by the server  
                 ctx.cookies.set('shopOrigin', shop, { httpOnly: false })
 
-                //Shopify billing set up
+                //Shopify billing API needs 3 variables:                
                 const stringifiedBillingParams = JSON.stringify({
                         recurring_application_charge: {
-                        name: 'Recurring charge',
+                        name: '30 Day Recurring Charge', //The name of your charge. For example, “Sample embedded app 30-day fee.”
                         price: 9.99,
-                        // return_url: TUNNEL_URL,
-                        test: true
+                        return_url: APP_URL,
+                        test: true //The Billing API also has a test property that simulates successful charges.
                     }
                 })
                 const options = {
@@ -109,12 +115,21 @@ app.prepare().then(() => {
                     },
                 };
 
+                //Make Shopify billing request using await
+                const confirmationURL = await fetch(
+                `https://${shop}/admin/recurring_application_charges.json`, options)
+                    .then((response) => response.json())
+                    .then((jsonData) => jsonData.recurring_application_charge.confirmation_url)
+                    .catch((error) => console.log('error', error));                    
 
-                ctx.redirect('/');
+                ctx.redirect(confirmationURL);
             },
         }),
     );        
+    //Used to securely proxy graphQL requests from Shopify
     server.use(graphQLProxy());
+    
+    server.use(router.routes());
     //Returns a middleware to verify requests before letting the app further in the chain.
     //Everything after this point will require authentication
     server.use(verifyRequest({        
