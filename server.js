@@ -33,6 +33,8 @@ const { verifyRequest } = require('@shopify/koa-shopify-auth');
 const { default: graphQLProxy } = require('@shopify/koa-shopify-graphql-proxy');
 const Router = require('koa-router');
 const processPayment = require('./server/router');
+const bodyParser = require('koa-bodyparser');
+const validateWebhook = require('./server/webhooks');
 
 const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== 'production';
@@ -78,6 +80,8 @@ app.prepare().then(() => {
     const router = new Router();
     server.keys = [SHOPIFY_API_SECRET_KEY];
 
+    //validates webhook and listens for products/create in the store
+    router.post('/webhooks/products/create', bodyParser(), validateWebhook);
     router.get('/', processPayment);
 
     server.use(session(server));    
@@ -95,6 +99,38 @@ app.prepare().then(() => {
                 //shopOrigin (shop) is the myshopify URL of the store that installs the app
                 //httpOnly: true tells the cookie that the cookie should only be accessible by the server  
                 ctx.cookies.set('shopOrigin', shop, { httpOnly: false })                
+
+                //Subscribing to webhook event 'products/create'
+                //In a production app, you would need to store the webhook in a database to access the response on the frontend.
+                const stringifiedWebhookParams = JSON.stringify({
+                    webhook: {
+                        topic: 'products/create',
+                        address: `${APP_URL}/webhooks/products/create`,
+                        format: 'json',
+                    },
+                });
+                const webhookOptions = {
+                    method: 'POST',
+                    body: stringifiedWebhookParams,
+                    credentials: 'include',
+                    headers: {
+                        'X-Shopify-Access-Token': accessToken,
+                        'Content-Type': 'application/json',
+                    },
+                };
+                console.log('shop ', shop)
+                console.log('shop2 ', webhookOptions)
+                fetch(`https://${shop}/admin/webhooks.json`, webhookOptions)
+                    .then((response) => { 
+                        console.log('webhook res1 ',response)
+                        return response.json()
+                    })
+                    .then((jsonData) => {
+                        const data = JSON.stringify(jsonData)
+                        console.log('webhook res2 ', data)
+                    })
+                    .catch((error) => console.log('webhook error', error));
+
                 //Shopify billing API requires 3 variables: price, name, return_url                
                 const stringifiedBillingParams = JSON.stringify({
                     recurring_application_charge: {
@@ -114,7 +150,6 @@ app.prepare().then(() => {
                         'Content-Type': 'application/json',
                     },
                 };
-
                 //Make Shopify billing request using await
                 const confirmationURL = await fetch(
                 `https://${shop}/admin/recurring_application_charges.json`, options)
@@ -124,14 +159,15 @@ app.prepare().then(() => {
                     .then((jsonData) => {                         
                         return jsonData.recurring_application_charge.confirmation_url 
                     })
-                    .catch((error) => console.log('error', error));                                        
-                ctx.redirect(confirmationURL);
+                    .catch((error) => console.log('error', error)); 
+
+                ctx.redirect(confirmationURL);                
             },
         }),
     );        
     //Used to securely proxy graphQL requests from Shopify
     server.use(graphQLProxy());
-
+    server.use(bodyParser());
     server.use(router.routes());
     //Returns a middleware to verify requests before letting the app further in the chain.
     //Everything after this point will require authentication
