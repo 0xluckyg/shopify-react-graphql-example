@@ -81,7 +81,7 @@ app.prepare().then(() => {
     server.keys = [SHOPIFY_API_SECRET_KEY];
 
     //validates webhook and listens for products/create in the store
-    router.post('/webhooks/products/create', bodyParser(), validateWebhook);
+    router.post('/webhooks/products/create', bodyParser(), validateWebhook)
     router.get('/', processPayment);
 
     server.use(session(server));    
@@ -94,6 +94,7 @@ app.prepare().then(() => {
             //After authenticating with Shopify redirects to this app through afterAuth
             //Async returns promise to wait for Shopify billing fetch to complete
             async afterAuth(ctx) {
+                console.log('afterAuth ctx ', ctx)
                 const { shop, accessToken } = ctx.session;   
                 //The app will use a library called Shopify App Bridge to communicate with Shopify by passing in Shopify API key to shopOrigin in Polaris AppProvider
                 //shopOrigin (shop) is the myshopify URL of the store that installs the app
@@ -105,7 +106,7 @@ app.prepare().then(() => {
                 const stringifiedWebhookParams = JSON.stringify({
                     webhook: {
                         topic: 'products/create',
-                        address: `${APP_URL}/webhooks/products/create`,
+                        address: `${APP_URL}/webhooks/products/create`,                        
                         format: 'json',
                     },
                 });
@@ -117,17 +118,14 @@ app.prepare().then(() => {
                         'X-Shopify-Access-Token': accessToken,
                         'Content-Type': 'application/json',
                     },
-                };
-                console.log('shop ', shop)
-                console.log('shop2 ', webhookOptions)
+                };                
                 fetch(`https://${shop}/admin/webhooks.json`, webhookOptions)
-                    .then((response) => { 
-                        console.log('webhook res1 ',response)
+                    .then((response) => {                         
                         return response.json()
                     })
                     .then((jsonData) => {
-                        const data = JSON.stringify(jsonData)
-                        console.log('webhook res2 ', data)
+                        const data = JSON.stringify(jsonData)                        
+                        return data                        
                     })
                     .catch((error) => console.log('webhook error', error));
 
@@ -165,10 +163,11 @@ app.prepare().then(() => {
             },
         }),
     );        
+
     //Used to securely proxy graphQL requests from Shopify
-    server.use(graphQLProxy());
-    server.use(bodyParser());
     server.use(router.routes());
+    server.use(graphQLProxy());
+    server.use(bodyParser());    
     //Returns a middleware to verify requests before letting the app further in the chain.
     //Everything after this point will require authentication
     server.use(verifyRequest({        
@@ -177,6 +176,7 @@ app.prepare().then(() => {
         // Path to redirect to if verification fails and there is no shop on the query. defaults to '/auth'
         // fallbackRoute: '/install',
     }));
+
     //Lets next.js prepare all the requests on the React side
     server.use(async (ctx) => {        
         await handle(ctx.req, ctx.res);
